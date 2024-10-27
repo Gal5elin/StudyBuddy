@@ -1,12 +1,48 @@
 import { Link } from "react-router-dom";
-
-const handleChange = () => {};
-
-const handleSubmit = (event: React.FormEvent) => {
-  event.preventDefault();
-};
+import { useState } from "react";
+import { IUser } from "../../models/IUser";
+import { login } from "../../api/authApi";
 
 const LoginCard = () => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+
+    switch (name) {
+      case "username":
+        setUsername(value);
+        break;
+      case "password":
+        setPassword(value);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+
+    const user: IUser = {
+      username: username,
+      password: password,
+    };
+
+    login(user)
+      .then((response) => {
+        if (response.success) {
+          console.log("User logged in:", response.user);
+        } else {
+          console.error("Login failed:", response.error);
+        }
+      })
+      .catch((error) => {
+        console.error("Error logging in:", error.message);
+      });
+  };
+
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100">
       <div className="card shadow-lg" style={{ width: "400px" }}>

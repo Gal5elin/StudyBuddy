@@ -49,7 +49,11 @@ const RegisterCard = () => {
 
     register(newUser)
       .then((response) => {
-        console.log("User registered:", response);
+        if (response.success) {
+          console.log("User registerd:", response.user);
+        } else {
+          console.error("Registering failed:", response.error);
+        }
       })
       .catch((error) => {
         console.error("Error registering:", error);
