@@ -1,23 +1,29 @@
 import { useEffect, useState } from "react";
 import { INote } from "../../models/INote";
-import { getNotes } from "../../api/notesApi";
+import { getNotesBySubject } from "../../api/notesApi";
 import NoteCard from "./NoteCard";
+import { useParams } from "react-router-dom";
 
 const NoteList = () => {
+  const { id: subjectId } = useParams<{ id: string }>(); // Destructure id directly
   const [notes, setNotes] = useState<INote[]>([]);
 
   useEffect(() => {
     const fetchNotes = async () => {
-      try {
-        const allNotes = await getNotes();
-        setNotes(allNotes);
-      } catch (error) {
-        console.error("Error fetching notes:", error);
+      if (subjectId) {
+        try {
+          const allNotes = await getNotesBySubject(subjectId); // Pass subjectId directly
+          setNotes(allNotes);
+        } catch (error) {
+          console.error("Error fetching notes:", error);
+        }
+      } else {
+        console.error("Subject ID is undefined");
       }
     };
 
     fetchNotes();
-  }, []);
+  }, [subjectId]); // Add subjectId to dependency array
 
   return (
     <>

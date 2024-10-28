@@ -18,12 +18,18 @@ const SubjectList = () => {
     fetchSubjects();
   }, []);
 
+  const handleSelect = (subject: ISubject) => {
+    document.location.href = `/subject/${subject.id}/notes`;
+  };
+  
+
   return (
     <>
+      <h1 className="text-center my-4">Subjects</h1>
       <div className="d-flex justify-content-center">
         {subjects.map((subject, index) => (
           <div className="flex-fill" key={index}>
-            <SubjectCard subject={subject} />
+            <SubjectCard subject={subject} onSelect={handleSelect} />
           </div>
         ))}
       </div>

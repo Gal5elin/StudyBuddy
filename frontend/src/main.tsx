@@ -1,11 +1,8 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
-import {
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router-dom";
-import './index.css'
-import App from './App.tsx'
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import "./index.css";
+import App from "./App.tsx";
 import NoteList from "./components/Notes/NoteList.tsx";
 import SubjectList from "./components/Subjects/SubjectList.tsx";
 import LoginCard from "./components/Auth/LoginCard.tsx";
@@ -15,22 +12,24 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
-  },
-  {
-    path: "/notes",
-    element: <NoteList />,
-  },
-  {
-    path: "/subjects",
-    element: <SubjectList />,
-  },
-  {
-    path: "/login",
-    element: <LoginCard />,
-  },
-  {
-    path: "/register",
-    element: <RegisterCard />,
+    children: [
+      {
+        path: "/subjects",
+        element: <SubjectList />,
+      },
+      {
+        path: "/subject/:id/notes",
+        element: <NoteList />,
+      },
+      {
+        path: "/login",
+        element: <LoginCard />,
+      },
+      {
+        path: "/register",
+        element: <RegisterCard />,
+      },
+    ],
   },
 ]);
 

@@ -4,7 +4,7 @@ const Navbar = () => {
       <nav className="navbar navbar-expand-lg navbar-light bg-light">
         <div className="container-fluid">
           <a className="navbar-brand" href="/">
-            Navbar
+            StudyBuddy
           </a>
           <button
             className="navbar-toggler"
@@ -19,11 +19,13 @@ const Navbar = () => {
           </button>
           <div className="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div className="navbar-nav">
-              <a className="nav-link" href="#">
-                Features
+              <a className="nav-link" href="/subjects">
+                Subjects
               </a>
-              <a className="nav-link" href="#">
-                Pricing
+            </div>
+            <div className="ms-auto">
+              <a className="nav-link" href="/login">
+                Login
               </a>
             </div>
           </div>

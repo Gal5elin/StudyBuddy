@@ -12,3 +12,13 @@ export const getNotes = async (): Promise<INote[]> => {
         throw error;
     }
 };
+
+export const getNotesBySubject = async (subjectId: string): Promise<INote[]> => {
+    try {
+        const response = await axios.get<INote[]>(`${BASE_URL}/getNotesBySubject.php?subjectId=${subjectId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching notes:', error);
+        throw error;
+    }
+};
