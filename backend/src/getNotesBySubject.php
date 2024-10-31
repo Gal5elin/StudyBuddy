@@ -1,5 +1,6 @@
-<?php 
+<?php
 include 'db.php';
+
 
 if (!isset($pdo)) {
     echo json_encode(['error' => 'Database connection failed']);

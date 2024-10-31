@@ -5,14 +5,14 @@ import NoteCard from "./NoteCard";
 import { useParams } from "react-router-dom";
 
 const NoteList = () => {
-  const { id: subjectId } = useParams<{ id: string }>(); // Destructure id directly
+  const { id: subjectId } = useParams<{ id: string }>();
   const [notes, setNotes] = useState<INote[]>([]);
 
   useEffect(() => {
     const fetchNotes = async () => {
       if (subjectId) {
         try {
-          const allNotes = await getNotesBySubject(subjectId); // Pass subjectId directly
+          const allNotes = await getNotesBySubject(subjectId);
           setNotes(allNotes);
         } catch (error) {
           console.error("Error fetching notes:", error);
@@ -23,7 +23,7 @@ const NoteList = () => {
     };
 
     fetchNotes();
-  }, [subjectId]); // Add subjectId to dependency array
+  }, [subjectId]);
 
   return (
     <>

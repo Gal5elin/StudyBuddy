@@ -1,3 +1,6 @@
+#Custom
+/backend/src/uploads/profile_pics/*
+
 # Logs
 logs
 *.log

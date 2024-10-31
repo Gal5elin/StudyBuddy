@@ -9,7 +9,7 @@ const SubjectCard = ({ subject, onSelect }: { subject: ISubject; onSelect: (subj
 
   return (
     <>
-      <a href="#" className="card align-items-center m-3 text-decoration-none" key={subject.id} onClick={() => handleSelect()}>
+      <a href="#" className="card subject-card align-items-center m-3 text-decoration-none" key={subject.id} onClick={() => handleSelect()}>
         <div className="card-body">
           <h5 className="card-title m-0">{subject.name}</h5>
         </div>

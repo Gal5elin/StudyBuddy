@@ -1,4 +1,20 @@
+import { jwtDecode } from "jwt-decode";
+import { IUser } from "../models/IUser";
+
 const Navbar = () => {
+  const token = localStorage.getItem("token");
+  let user: IUser | null = null;
+
+  if (token) {
+    try {
+      user = jwtDecode<IUser>(token);
+    } catch (error) {
+      console.error("Invalid token:", error);
+    }
+
+    console.log("User:", user);
+  }
+
   return (
     <>
       <nav className="navbar navbar-expand-lg navbar-light bg-light">
@@ -24,9 +40,25 @@ const Navbar = () => {
               </a>
             </div>
             <div className="ms-auto">
-              <a className="nav-link" href="/login">
-                Login
-              </a>
+              {user ? (
+                <a className="nav-link" href="/dashboard">
+                  <img
+                  src={
+                    user.profile_pic
+                    ? `http://localhost:8080/${user.profile_pic}`
+                    : "/path/to/default/profile-picture.jpg"
+                  }
+                  alt="Profile"
+                  className="rounded-circle"
+                  width="30"
+                  height="30"
+                  />
+                </a>
+              ) : (
+                <a className="nav-link" href="/login">
+                  Login
+                </a>
+              )}
             </div>
           </div>
         </div>

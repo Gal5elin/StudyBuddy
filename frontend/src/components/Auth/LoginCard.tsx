@@ -33,7 +33,8 @@ const LoginCard = () => {
     login(user)
       .then((response) => {
         if (response.success) {
-          console.log("User logged in:", response.user);
+          console.log("User logged in. Token stored in localStorage.");
+          
         } else {
           console.error("Login failed:", response.error);
         }

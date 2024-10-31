@@ -10,7 +10,7 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Content-Type");
 header("Content-Type: application/json");
 
-$data = json_decode(file_get_contents("php://input"), true);
+$data = $_POST;
 
 try {
     $checkStmt = $pdo->prepare('SELECT COUNT(*) FROM user WHERE username = :username OR email = :email');
@@ -42,6 +42,25 @@ try {
         $userStmt->bindParam(':id', $lastId);
         $userStmt->execute();
         $user = $userStmt->fetch(PDO::FETCH_ASSOC);
+
+        if (isset($_FILES['profile_pic'])) {
+            $profilePic = $_FILES['profile_pic'];
+            $uploadDir = 'uploads/profile_pics/';
+            $profilePicPath = $uploadDir . $lastId . '_' . basename($profilePic['name']);
+        
+            if (move_uploaded_file($profilePic['tmp_name'], $profilePicPath)) {
+                $updateStmt = $pdo->prepare('UPDATE user SET profile_pic = :profile_pic WHERE id = :id');
+                $updateStmt->bindParam(':profile_pic', $profilePicPath);
+                $updateStmt->bindParam(':id', $lastId);
+                $updateStmt->execute();
+        
+                $user['profile_pic'] = $profilePicPath;
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Profile picture upload failed.']);
+                exit;
+            }
+        }        
+        
 
         echo json_encode(['success' => true, 'user' => $user]);
     } else {

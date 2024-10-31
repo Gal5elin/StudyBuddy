@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { register } from "../../api/authApi";
-import { IUser } from "../../models/IUser";
+//import { IUser } from "../../models/IUser";
 
 const RegisterCard = () => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [profilePic, setProfilePic] = useState<File | null>(null);
   const [passwordMatch, setPasswordMatch] = useState(true);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -28,6 +29,11 @@ const RegisterCard = () => {
         setConfirmPassword(value);
         setPasswordMatch(value === password);
         break;
+      case "profile_pic":
+        if (e.target.files) {
+          setProfilePic(e.target.files[0]);
+        }
+        break;
       default:
         break;
     }
@@ -41,25 +47,25 @@ const RegisterCard = () => {
       return;
     }
 
-    const newUser: IUser = {
-      email: email,
-      username: username,
-      password
+    const formData = new FormData();
+    formData.append("email", email);
+    formData.append("username", username);
+    formData.append("password", password);
+    if (profilePic) {
+      formData.append("profile_pic", profilePic);
     }
 
-    register(newUser)
+    register(formData)
       .then((response) => {
         if (response.success) {
-          console.log("User registerd:", response.user);
+          console.log("User registered:", response.user);
         } else {
-          console.error("Registering failed:", response.error);
+          console.error("Registration failed:", response.error);
         }
       })
       .catch((error) => {
         console.error("Error registering:", error);
       });
-
-
   };
 
   return (
@@ -135,6 +141,20 @@ const RegisterCard = () => {
                   backgroundColor: passwordMatch ? "" : "#FFCCCB",
                 }}
                 required
+              />
+            </div>
+
+            <div className="mb-3">
+              <label htmlFor="profile_pic" className="form-label">
+                Profile Picture:
+              </label>
+              <input
+                type="file"
+                id="profile_pic"
+                name="profile_pic"
+                className="form-control"
+                accept="image/*"
+                onChange={handleChange}
               />
             </div>
 
