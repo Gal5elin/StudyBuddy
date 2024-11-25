@@ -3,6 +3,8 @@ import { IUser } from "../models/IUser";
 
 const BASE_URL = "http://localhost:8080";
 
+const token = localStorage.getItem("token");
+
 export const register = async (formData: FormData) => {
     try {
         const response = await axios.post(`${BASE_URL}/register.php`, formData);
@@ -32,7 +34,22 @@ export const logout = () => {
     localStorage.removeItem("token");
 };
 
-export const isLoggedIn = () => {
-    return localStorage.getItem("token") !== null;
+export const isLoggedIn = async () => {
+    try {
+        const response = await axios.post(`${BASE_URL}/authMiddleware.php`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.data.success) {
+            console.log(response.data)
+        }
+
+        return response.data;
+    } catch (error) {
+        console.error("Error:", error);
+        throw error;
+    }
 };
 

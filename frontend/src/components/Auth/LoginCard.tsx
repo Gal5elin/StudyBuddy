@@ -2,10 +2,16 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { IUser } from "../../models/IUser";
 import { login } from "../../api/authApi";
+import InfoCard from "../common/InfoCard";
 
 const LoginCard = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [info, setInfo] = useState<{
+    type: "ok" | "error" | "warning";
+    title: string;
+    description: string;
+  } | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -34,18 +40,40 @@ const LoginCard = () => {
       .then((response) => {
         if (response.success) {
           console.log("User logged in. Token stored in localStorage.");
-          
+          setInfo({
+            type: "ok",
+            title: "Login Successful",
+            description: "You have been successfully logged in.",
+          });
         } else {
           console.error("Login failed:", response.error);
+          setInfo({
+            type: "error",
+            title: "Login Failed",
+            description: response.error,
+          });
         }
       })
       .catch((error) => {
         console.error("Error logging in:", error.message);
+        setInfo({
+          type: "error",
+          title: "Error",
+          description: "An unexpected error occurred. Please try again later.",
+        });
       });
   };
 
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100">
+      {info && (
+        <InfoCard
+          type={info.type}
+          title={info.title}
+          description={info.description}
+          onClose={() => setInfo(null)}
+        />
+      )}
       <div className="card shadow-lg" style={{ width: "400px" }}>
         <div className="card-body">
           <h5 className="card-title text-center">Login</h5>

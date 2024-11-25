@@ -1,6 +1,6 @@
 <?php
 include 'db.php';
-include 'vendor/firebase/php-jwt/src/JWT.php';
+require_once '/var/www/html/vendor/autoload.php';
 
 use Firebase\JWT\JWT;
 

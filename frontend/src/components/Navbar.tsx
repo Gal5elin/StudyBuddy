@@ -1,19 +1,19 @@
-import { jwtDecode } from "jwt-decode";
-import { IUser } from "../models/IUser";
+import { useEffect, useState } from "react";
+import { getProfilePic } from "../api/usersApi";
 
 const Navbar = () => {
-  const token = localStorage.getItem("token");
-  let user: IUser | null = null;
+  const [profilePic, setProfilePic] = useState<string | null>(null);
 
-  if (token) {
-    try {
-      user = jwtDecode<IUser>(token);
-    } catch (error) {
-      console.error("Invalid token:", error);
-    }
+  useEffect(() => {
+    const fetchProfilePic = async () => {
+      const picBlob = await getProfilePic(); // Should return a Blob or URL
+      console.log(picBlob);
+      const imageUrl = URL.createObjectURL(picBlob); // Convert Blob to image URL
+      setProfilePic(imageUrl);
+    };
 
-    console.log("User:", user);
-  }
+    fetchProfilePic();
+  }, []);
 
   return (
     <>
@@ -40,18 +40,14 @@ const Navbar = () => {
               </a>
             </div>
             <div className="ms-auto">
-              {user ? (
+              {profilePic ? (
                 <a className="nav-link" href="/dashboard">
                   <img
-                  src={
-                    user.profile_pic
-                    ? `http://localhost:8080/${user.profile_pic}`
-                    : "/path/to/default/profile-picture.jpg"
-                  }
-                  alt="Profile"
-                  className="rounded-circle"
-                  width="30"
-                  height="30"
+                    src={profilePic}
+                    alt="Profile"
+                    className="rounded-circle"
+                    width="30"
+                    height="30"
                   />
                 </a>
               ) : (
