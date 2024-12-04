@@ -21,19 +21,10 @@
   text-align: center;
 }
 
-.infocard-close {
-  position: absolute;
-  top: -1px;
-  right: -1px;
-  background: none;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-}
-
 .infocard-header {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   margin-bottom: 15px;
 }

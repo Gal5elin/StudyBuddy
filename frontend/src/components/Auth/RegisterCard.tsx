@@ -60,7 +60,7 @@ const RegisterCard = () => {
         if (response.success) {
           console.log("User registered:", response.user);
         } else {
-          console.error("Registration failed:", response.error);
+          console.error("Registration failed:", response);
         }
       })
       .catch((error) => {

@@ -3,8 +3,6 @@ import { IUser } from "../models/IUser";
 
 const BASE_URL = "http://localhost:8080";
 
-const token = localStorage.getItem("token");
-
 export const register = async (formData: FormData) => {
     try {
         const response = await axios.post(`${BASE_URL}/register.php`, formData);
@@ -34,22 +32,59 @@ export const logout = () => {
     localStorage.removeItem("token");
 };
 
-export const isLoggedIn = async () => {
-    try {
-        const response = await axios.post(`${BASE_URL}/authMiddleware.php`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        if (response.data.success) {
-            console.log(response.data)
-        }
 
-        return response.data;
+export const getUser = async () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        console.error("No token found");
+        throw new Error("Token not found");
+    }
+
+    try {
+        const response = await axios.get(
+            `${BASE_URL}/getUser.php`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            }
+        );
+
+        //console.log("User data response:", response);
+        if (response.data.success) {
+            //console.log("User data:", response.data.user);
+            return response.data.user;
+        } else {
+            console.error("Error in response data:", response.data);
+        }
     } catch (error) {
         console.error("Error:", error);
         throw error;
     }
 };
 
+
+export const isLoggedIn = async () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        return false;
+    }
+
+    try {
+        const response = await axios.get(
+            `${BASE_URL}/getUser.php`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            }
+        );
+
+        return response.data.success;
+    } catch (error) {
+        console.error("Error:", error);
+        return false;
+    }
+};

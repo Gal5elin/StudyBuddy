@@ -1,10 +1,14 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { IUser } from "../../models/IUser";
 import { login } from "../../api/authApi";
 import InfoCard from "../common/InfoCard";
+import { useUser } from "./UserContext";
 
 const LoginCard = () => {
+  const navigate = useNavigate();
+  const { setUser } = useUser();
+  
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [info, setInfo] = useState<{
@@ -39,7 +43,8 @@ const LoginCard = () => {
     login(user)
       .then((response) => {
         if (response.success) {
-          console.log("User logged in. Token stored in localStorage.");
+          console.log("User logged in. Token stored in localStorage.", response.user);
+          setUser(response.user);
           setInfo({
             type: "ok",
             title: "Login Successful",
@@ -64,6 +69,11 @@ const LoginCard = () => {
       });
   };
 
+  const handleCloseInfoCard = () => {
+    navigate("/");
+    window.location.reload();
+  };
+
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100">
       {info && (
@@ -71,7 +81,7 @@ const LoginCard = () => {
           type={info.type}
           title={info.title}
           description={info.description}
-          onClose={() => setInfo(null)}
+          onClose={handleCloseInfoCard}
         />
       )}
       <div className="card shadow-lg" style={{ width: "400px" }}>

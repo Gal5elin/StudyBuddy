@@ -7,6 +7,7 @@ import NoteList from "./components/Notes/NoteList.tsx";
 import SubjectList from "./components/Subjects/SubjectList.tsx";
 import LoginCard from "./components/Auth/LoginCard.tsx";
 import RegisterCard from "./components/Auth/RegisterCard.tsx";
+import Dashboard from "./components/Dashboard.tsx";
 
 const router = createBrowserRouter([
   {
@@ -29,6 +30,10 @@ const router = createBrowserRouter([
         path: "/register",
         element: <RegisterCard />,
       },
+      {
+        path: "/dashboard",
+        element: <Dashboard />
+      }
     ],
   },
 ]);

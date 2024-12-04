@@ -1,21 +1,15 @@
 <?php
-// Start output buffering
 ob_start();
 
-// Set CORS headers
-header("Access-Control-Allow-Origin: http://localhost:5173"); // Allow only your frontend's origin
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS"); // Allow certain methods
-header("Access-Control-Allow-Headers: Content-Type, Authorization"); // Allow headers sent by the frontend
-header("Content-Type: application/json");
+header("Access-Control-Allow-Origin: http://localhost:5173");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
-// Handle OPTIONS request (preflight)
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    // Respond with 200 OK for preflight requests
     http_response_code(200);
     exit;
 }
 
-// Continue with your normal script
 include 'db.php';
 include 'authMiddleware.php';
 
@@ -38,19 +32,24 @@ try {
         $mimeType = $finfo->file($profilePicPath);
         
         if (strpos($mimeType, 'image/') === 0) {
+            // Output the image
             header("Content-Type: " . $mimeType);
             header("Content-Length: " . filesize($profilePicPath));
             readfile($profilePicPath);
-            exit;
+            exit; // Make sure no other code is executed after this
         } else {
+            // If the file is not an image, return JSON error
             echo json_encode(['error' => 'The file is not a valid image']);
         }
     } else {
+        // If the profile picture doesn't exist or isn't readable, return JSON error
         echo json_encode(['error' => 'Profile picture not found or is not accessible']);
     }
 } catch (PDOException $e) {
+    // Handle database error and return JSON response
     echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
 } catch (Exception $e) {
+    // Handle general exceptions and return JSON response
     echo json_encode(['error' => 'Unexpected error: ' . $e->getMessage()]);
 }
 

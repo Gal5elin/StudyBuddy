@@ -39,13 +39,11 @@ const InfoCard: React.FC<InfocardProps> = ({
   return (
     <div className="infocard-overlay">
       <div className={`infocard ${getCardClass()}`}>
-        <button className="infocard-close" onClick={handleClose}>
-          ✖
-        </button>
         <div className="infocard-header">
           <h3>{title}</h3>
         </div>
         <p>{description}</p>
+        <button className="btn btn-primary w-50" onClick={handleClose}>Ok</button>
       </div>
     </div>
   );
