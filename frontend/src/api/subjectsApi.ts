@@ -12,3 +12,15 @@ export const getSubjects = async (): Promise<ISubject[]> => {
         throw error;
     }
 };
+
+export const getSubjectById = async (subjectId: string): Promise<ISubject> => {
+    try {
+        // Pass subject_id as a query parameter in the URL
+        const response = await axios.get<ISubject>(`${BASE_URL}/getSubjectById.php?subjectId=${subjectId}`);
+        return response.data; // Assuming the response contains a single subject
+    } catch (error) {
+        console.error('Error fetching subject:', error);
+        throw error;
+    }
+};
+

@@ -69,7 +69,7 @@ const Navbar = () => {
                     height="30"
                   />
                 ) : (
-                  <span className="badge bg-secondary">No Pic</span>
+                  <span className="badge bg-secondary"></span>
                 )}
               </a>
             ) : (

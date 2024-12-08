@@ -40,6 +40,7 @@ CREATE TABLE note (
     subject_id INT,
     visibility ENUM('public', 'hidden') DEFAULT 'public',
     secret_key VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES user(id),
     FOREIGN KEY (subject_id) REFERENCES subject(id)
 );
@@ -66,24 +67,10 @@ INSERT INTO subject (name) VALUES
 ('Chemistry'),
 ('Biology');
 
--- Insert test files
-INSERT INTO file (file_name, file_path, user_id) VALUES 
-('Math Notes', '/files/math_notes.pdf', 1),
-('Physics Lecture', '/files/physics_lecture.pdf', 1),
-('Chemistry Workbook', '/files/chemistry_workbook.pdf', 2),
-('Biology Experiment', '/files/biology_experiment.pdf', 3);
-
 -- Insert test notes
 INSERT INTO note (title, description, user_id, subject_id, visibility, secret_key) VALUES 
 ('Algebra Basics', 'Introduction to Algebra concepts.', 1, 1, 'public', NULL),
 ('Quantum Mechanics Overview', 'Basics of Quantum Mechanics.', 1, 2, 'hidden', 'quantum123'),
 ('Organic Chemistry Principles', 'Key principles of Organic Chemistry.', 2, 3, 'public', NULL),
 ('Cell Biology', 'Understanding cell structure and functions.', 3, 4, 'public', NULL);
-
--- Insert test note_file associations
-INSERT INTO note_file (note_id, file_id) VALUES 
-(1, 1),  -- Algebra Basics linked to Math Notes
-(2, 2),  -- Quantum Mechanics Overview linked to Physics Lecture
-(3, 3),  -- Organic Chemistry Principles linked to Chemistry Workbook
-(4, 4);  -- Cell Biology linked to Biology Experiment
 
