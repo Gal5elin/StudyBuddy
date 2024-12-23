@@ -3,12 +3,21 @@ export enum Visibility {
   hidden = "hidden",
 }
 
+export interface INoteFile {
+  id: number;
+  file_name: string;
+  file_path: string;
+  uploaded_at: string;
+}
+
 export interface INote {
-  id?: number;
+  id: number;
   title: string;
   description: string;
   user_id: number;
   subject_id: number;
-  visibility: Visibility;
-  secret_key: string;
+  visibility: string;
+  secret_key: string | null;
+  created_at: string;
+  files: INoteFile[];
 }

@@ -1,31 +1,20 @@
 import { useEffect, useState } from "react";
-import { INote, Visibility } from "../../models/INote";
-import { addNote, getNotesBySubject } from "../../api/notesApi";
+import { INote } from "../../models/INote";
+import { addNote, getNotesBySubject, uploadFile } from "../../api/notesApi";
 import NoteCard from "./NoteCard";
 import { useParams } from "react-router-dom";
 import { Button, Alert, Spinner } from "react-bootstrap";
-import AddModal from "../common/AddModal";
-
-// Define types for the modal config and form data
-interface NoteFormConfig {
-  title: string;
-  submitButtonText: string;
-  fields: {
-    name: string;
-    label: string;
-    type: "text" | "textarea" | "select" | "radio";
-    required?: boolean;
-    options?: string[];
-  }[];
-}
+import AddNoteModal from "../common/AddNoteModal";
+import { ISubject } from "../../models/ISubject";
+import { getSubjects } from "../../api/subjectsApi";
 
 const NoteList = () => {
   const { id: subjectId } = useParams<{ id: string }>();
   const [notes, setNotes] = useState<INote[]>([]);
+  const [subjects, setSubjects] = useState<ISubject[]>([]); // State to store subjects
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [modalConfig, setModalConfig] = useState<NoteFormConfig | null>(null);
 
   // Fetch notes by subject
   const fetchNotes = async () => {
@@ -46,19 +35,36 @@ const NoteList = () => {
     }
   };
 
+  // Fetch subjects for the modal select
+  const fetchSubjects = async () => {
+    setLoading(true);
+    try {
+      // Fetch subjects
+      const fetchedSubjects = await getSubjects();
+      setSubjects(fetchedSubjects);
+    } catch (error) {
+      setError("Error fetching subjects");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchNotes();
+    fetchSubjects(); // Fetch subjects when component is mounted
   }, [subjectId]);
 
   // Modal actions
-  const handleShowModal = (config: NoteFormConfig) => {
-    setModalConfig(config);
+  const handleShowModal = () => {
     setShowModal(true);
   };
 
   const handleCloseModal = () => setShowModal(false);
 
-  const handleFormSubmit = async (formData: { [key: string]: any }) => {
+  const handleFormSubmit = async (
+    formData: { [key: string]: any },
+    files: File[]
+  ) => {
     console.log("Form Data Submitted:", formData);
 
     // Validate required fields
@@ -68,58 +74,44 @@ const NoteList = () => {
     }
 
     try {
-      await addNote(formData); // Submit the form data
+      // First, send the note data to the addNote endpoint
+      const noteResponse = await addNote(formData);
 
-      setShowModal(false);
-      setError(null);
-      console.log("Note added successfully");
-      fetchNotes();
-    } catch (error) {
+      const noteId = noteResponse.data.noteId; // Assuming noteId is returned in the response
+
+      if (files.length > 0) {
+        // Upload each file with the noteId
+        for (const file of files) {
+          await uploadFile(file, noteId);
+        }
+        console.log("Files uploaded and associated with the note.");
+      }
+
+      setShowModal(false); // Close the modal after successful submission
+      setError(null); // Reset error
+      fetchNotes(); // Refresh the list of notes
+
+      console.log("Note added successfully:", noteResponse.data);
+    } catch (error: any) {
       console.error("Error adding note:", error);
       setError("Failed to add note. Please try again.");
     }
   };
 
-  // Define the note form configuration
-  const noteFormConfig: NoteFormConfig = {
-    title: "Add New Note",
-    submitButtonText: "Add Note",
-    fields: [
-      { name: "title", label: "Note Title", type: "text", required: true },
-      { name: "description", label: "Note Description", type: "textarea" },
-      {
-        name: "subject",
-        label: "Subject",
-        type: "select",
-        required: true,
-      },
-      {
-        name: "visibility",
-        label: "Visibility",
-        type: "radio",
-        options: ["public", "hidden"],
-        required: true,
-      },
-    ],
-  };
-
   return (
     <>
       <div className="d-flex justify-content-center mt-4">
-        <Button
-          variant="primary"
-          onClick={() => handleShowModal(noteFormConfig)}
-        >
+        <Button variant="primary" onClick={handleShowModal}>
           Add New Note
         </Button>
       </div>
 
-      {modalConfig && (
-        <AddModal
+      {showModal && (
+        <AddNoteModal
           show={showModal}
           handleClose={handleCloseModal}
-          formConfig={modalConfig}
           onSubmit={handleFormSubmit}
+          subjects={subjects} // Pass the subjects to the modal
         />
       )}
 

@@ -1,18 +1,28 @@
+# Use the PHP 8.2 Apache base image
 FROM php:8.2-apache
 
-# Enable Apache mod_rewrite
+# Enable Apache mod_rewrite for pretty URLs
 RUN a2enmod rewrite
 
 # Install dependencies
-RUN apt-get update && apt-get install -y git unzip \
-    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    libzip-dev \
+    && docker-php-ext-configure zip \
+    && docker-php-ext-install zip \
+    && apt-get clean
 
-# Copy source code first to preserve structure
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Copy source code into the container
 COPY src/ /var/www/html/
 
+# Set the working directory
 WORKDIR /var/www/html
 
-# Ensure the uploads/profile_pics directories are created after copying
+# Ensure uploads/profile_pics directories are created with proper permissions
 RUN mkdir -p /var/www/html/uploads/profile_pics \
     && chown -R www-data:www-data /var/www/html/uploads \
     && chmod -R 755 /var/www/html/uploads
@@ -24,8 +34,8 @@ RUN chown -R www-data:www-data /var/www/html \
 # Install PHP extensions
 RUN docker-php-ext-install pdo pdo_mysql
 
-# Install Composer dependencies only if composer.json exists
+# Install Composer dependencies if composer.json exists
 RUN if [ -f composer.json ]; then composer install; fi
 
-# Configure Apache for uploads directory
-RUN echo '<Directory /var/www/html/uploads>\n    Options Indexes FollowSymLinks\n    AllowOverride All\n    Require all denied\n</Directory>' >> /etc/apache2/apache2.conf
+# Configure Apache for the uploads directory to restrict access
+RUN echo '<Directory /var/www/html/uploads>\n    Options -Indexes +FollowSymLinks\n    AllowOverride None\n    Require all denied\n</Directory>' >> /etc/apache2/apache2.conf

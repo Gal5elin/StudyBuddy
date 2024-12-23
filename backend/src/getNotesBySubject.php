@@ -18,7 +18,7 @@ if (!isset($_GET['subjectId'])) {
 $subject_id = $_GET['subjectId'];
 
 try {
-    $stmt = $pdo->prepare('SELECT * FROM note WHERE subject_id = :subject_id');
+    $stmt = $pdo->prepare('SELECT * FROM note WHERE subject_id = :subject_id AND visibility = "public"');
     $stmt->bindParam(':subject_id', $subject_id, PDO::PARAM_INT);
     $stmt->execute();
     $notes = $stmt->fetchAll();
