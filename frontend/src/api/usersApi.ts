@@ -5,7 +5,6 @@ const BASE_URL = "http://localhost:8080";
 const token = localStorage.getItem("token");
 
 export const getProfilePic = async () => {
-
   if (!token) {
     console.error("No token found");
     throw new Error("Token not found");
@@ -16,15 +15,13 @@ export const getProfilePic = async () => {
       headers: {
         Authorization: `Bearer ${token}`,
       },
-      responseType: "blob", // Expecting a binary response (image)
+      responseType: "blob",
     });
 
-    // Here, response.data is a blob (the image file)
     if (response.status === 200) {
-      // Create an object URL for the image blob
       const imageUrl = URL.createObjectURL(response.data);
 
-      return imageUrl; // Return the image URL to use in your component
+      return imageUrl;
     } else {
       throw new Error("Failed to fetch profile picture");
     }

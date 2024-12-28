@@ -1,77 +1,130 @@
 <?php
-include 'db.php'; // Database connection
-include 'authMiddleware.php'; // Authentication check
+include 'db.php';
+include 'authMiddleware.php';
+require_once 'vendor/autoload.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Check if file is uploaded
     if (isset($_FILES['file']) && isset($_POST['note_id'])) {
-        // Get the uploaded file details
-        $file = $_FILES['file'];
-        $note_id = (int)$_POST['note_id']; // The note the file is associated with
+        try {
+            $note_id = (int)$_POST['note_id'];
+            if ($note_id <= 0) {
+                respondWithError("Invalid note ID.");
+            }
 
-        // Check for file upload errors
-        if ($file['error'] !== UPLOAD_ERR_OK) {
-            respondWithError('File upload error');
-        }
+            $upload_dir = 'uploads/note_files/';
+            if (!is_dir($upload_dir)) {
+                if (!mkdir($upload_dir, 0755, true)) {
+                    respondWithError("Failed to create upload directory.");
+                }
+            }
 
-        // Get file info
-        $file_name = basename($file['name']);
-        $file_tmp_path = $file['tmp_name'];
-        $upload_dir = 'uploads/note_files/'; // The directory where files will be uploaded
-        $file_path = $upload_dir . $file_name;
+            $uploadedFiles = [];
+            $all_imgs = [];
 
-        // Ensure the upload directory exists
-        if (!is_dir($upload_dir)) {
-            mkdir($upload_dir, 0755, true);
-        }
+            if (is_array($_FILES['file']['tmp_name'])) {
+                foreach ($_FILES['file']['tmp_name'] as $index => $tmpName) {
+                    if (!empty($tmpName)) {
+                        $fileName = $_FILES['file']['name'][$index];
+                        $fileType = mime_content_type($tmpName);
+                        $destination = $upload_dir . basename($fileName);
 
-        // Move the uploaded file to the desired directory
-        if (!move_uploaded_file($file_tmp_path, $file_path)) {
-            respondWithError('Failed to move uploaded file');
-        }
+                        if (strpos($fileType, 'image/') === 0) {
+                            $all_imgs[] = $tmpName;
+                        } elseif ($fileType === 'application/pdf') {
+                            if (!move_uploaded_file($tmpName, $destination)) {
+                                respondWithError("Failed to upload file: $fileName.");
+                            }
+                            $uploadedFiles[] = [
+                                'file_name' => $fileName,
+                                'file_path' => $destination
+                            ];
+                        } else {
+                            respondWithError("Unsupported file type: $fileType.");
+                        }
+                    }
+                }
+            } else {
+                $tmpName = $_FILES['file']['tmp_name'];
+                $fileName = $_FILES['file']['name'];
+                $fileType = mime_content_type($tmpName);
+                $destination = $upload_dir . basename($fileName);
 
-        // Get the user ID from the authenticated user
-        if (isset($GLOBALS['user'])) {
+                if (strpos($fileType, 'image/') === 0) {
+                    $all_imgs[] = $tmpName;
+                } elseif ($fileType === 'application/pdf') {
+                    if (!move_uploaded_file($tmpName, $destination)) {
+                        respondWithError("Failed to upload file: $fileName.");
+                    }
+                    $uploadedFiles[] = [
+                        'file_name' => $fileName,
+                        'file_path' => $destination
+                    ];
+                } else {
+                    respondWithError("Unsupported file type: $fileType.");
+                }
+            }
+
+            if (count($all_imgs) > 0) {
+                $outputPDF = $upload_dir . 'note_'. $note_id . '_' . uniqid() . '.pdf';
+                if (!convertImagesToPDF($all_imgs, $outputPDF)) {
+                    respondWithError("Failed to convert images to PDF.");
+                }
+                $uploadedFiles[] = [
+                    'file_name' => basename($outputPDF),
+                    'file_path' => $outputPDF
+                ];
+            }
+
+            if (!isset($GLOBALS['user'])) {
+                respondWithError("User not authenticated.");
+            }
             $user_id = $GLOBALS['user']->userId;
-        } else {
-            respondWithError('User not authenticated');
+
+            foreach ($uploadedFiles as $file) {
+                $stmt = $pdo->prepare("INSERT INTO file (file_name, file_path, user_id) VALUES (?, ?, ?)");
+                if (!$stmt->execute([$file['file_name'], $file['file_path'], $user_id])) {
+                    respondWithError("Failed to save file details.");
+                }
+
+                $file_id = $pdo->lastInsertId();
+                $stmt = $pdo->prepare("INSERT INTO note_file (note_id, file_id) VALUES (?, ?)");
+                if (!$stmt->execute([$note_id, $file_id])) {
+                    respondWithError("Failed to associate file with note.");
+                }
+            }
+
+            echo json_encode([
+                'message' => 'Files uploaded and associated successfully',
+                'file_paths' => array_column($uploadedFiles, 'file_path')
+            ]);
+        } catch (Exception $e) {
+            error_log("Error: " . $e->getMessage());
+            respondWithError($e->getMessage());
         }
-
-        // Insert file metadata into the 'file' table
-        $stmt = $pdo->prepare("INSERT INTO file (file_name, file_path, user_id) VALUES (?, ?, ?)");
-        if (!$stmt->execute([$file_name, $file_path, $user_id])) {
-            respondWithError('Failed to insert file into the database');
-        }
-
-        // Get the last inserted file ID
-        $file_id = $pdo->lastInsertId();
-
-        // Associate the file with the note
-        $stmt = $pdo->prepare("INSERT INTO note_file (note_id, file_id) VALUES (?, ?)");
-        if (!$stmt->execute([$note_id, $file_id])) {
-            respondWithError('Failed to associate file with note');
-        }
-
-        // Respond with success
-        respondWithSuccess('File uploaded and associated with note successfully');
     } else {
-        respondWithError('No file uploaded or note_id not provided');
+        respondWithError("No file uploaded or note ID not provided.");
     }
 } else {
-    respondWithError('Invalid request method');
+    respondWithError("Invalid request method.");
 }
 
-// Function to send a JSON error response
+function convertImagesToPDF($imagePaths, $outputPDF) {
+    try {
+        $imagick = new Imagick();
+        foreach ($imagePaths as $imagePath) {
+            $imagick->readImage($imagePath);
+        }
+        $imagick->setImageFormat('pdf');
+        $imagick->writeImages($outputPDF, true);
+        return file_exists($outputPDF);
+    } catch (Exception $e) {
+        error_log("Error converting images to PDF: " . $e->getMessage());
+        return false;
+    }
+}
+
 function respondWithError($message) {
-    http_response_code(400); // Bad request
+    http_response_code(400);
     echo json_encode(['error' => $message]);
     exit;
 }
-
-// Function to send a JSON success response
-function respondWithSuccess($message) {
-    http_response_code(200); // OK
-    echo json_encode(['message' => $message]);
-    exit;
-}
-?>

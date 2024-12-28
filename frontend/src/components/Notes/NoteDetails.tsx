@@ -1,31 +1,63 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { INote } from "../../models/INote";
-import { downloadAllFiles, getNoteById } from "../../api/notesApi";
+import {
+  downloadAllFiles,
+  getHiddenNote,
+  getNoteById,
+} from "../../api/notesApi";
 import PDFViewer from "../common/PDFViewer";
-import { Tabs, Tab, Button } from "react-bootstrap";
+import { Tabs, Tab, Button, Alert } from "react-bootstrap";
 
 const NoteDetails = () => {
   const { noteId } = useParams<{ noteId: string }>();
+  const [searchParams] = useSearchParams();
   const [note, setNote] = useState<INote | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchNoteDetails = async () => {
       try {
+        setError(null);
+        setNote(null);
+
         if (noteId) {
-          const data = await getNoteById(noteId);
-          setNote(data);
-          console.log("Note details:", data);
+          let data;
+          const key = searchParams.get("key");
+
+          if (key) {
+            data = await getHiddenNote(noteId, key);
+          } else {
+            data = await getNoteById(noteId);
+          }
+
+          if (data && "error" in data) {
+            setError(data.error as string);
+          } else {
+            setNote(data as INote);
+          }
         } else {
-          console.error("Note ID is undefined");
+          setError("Note ID is undefined.");
         }
-      } catch (error) {
-        console.error("Error fetching note details", error);
+      } catch (error: any) {
+        setError("An unexpected error occurred.");
+        console.error("Error fetching note details:", error);
       }
     };
 
     fetchNoteDetails();
-  }, [noteId]);
+  }, [noteId, searchParams]);
+
+  if (error) {
+    return (
+      <div className="container mt-5">
+        <Alert variant="danger" className="text-center">
+          <h4>Error</h4>
+          <p>{error}</p>
+        </Alert>
+      </div>
+    );
+  }
 
   if (!note) {
     return (
@@ -59,19 +91,19 @@ const NoteDetails = () => {
           </Button>
 
           {note.files && note.files.length > 0 ? (
-              <Tabs defaultActiveKey={note.files[0].id} id="file-tabs">
-                {note.files.map((file) => (
-                  <Tab
-                    key={file.id}
-                    eventKey={file.id}
-                    title={file.file_name || `File ${file.id}`}
-                  >
-                    <div className="mt-4">
-                      <PDFViewer noteId={note.id} fileId={file.id} />
-                    </div>
-                  </Tab>
-                ))}
-              </Tabs>
+            <Tabs defaultActiveKey={note.files[0].id} id="file-tabs">
+              {note.files.map((file) => (
+                <Tab
+                  key={file.id}
+                  eventKey={file.id}
+                  title={file.file_name || `File ${file.id}`}
+                >
+                  <div className="mt-4">
+                    <PDFViewer noteId={note.id} fileId={file.id} />
+                  </div>
+                </Tab>
+              ))}
+            </Tabs>
           ) : (
             <div className="alert alert-warning mt-4" role="alert">
               No files associated with this note.

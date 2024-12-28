@@ -9,17 +9,17 @@ if (!isset($pdo)) {
 header("Access-Control-Allow-Origin: *");
 header('Content-Type: application/json');
 
-// Check if 'noteId' is provided in the query string
 if (!isset($_GET['noteId'])) {
     echo json_encode(['error' => 'Note parameter is required']);
     exit;
 }
 
 $noteId = $_GET['noteId'];
+$secretKey = isset($_GET['key']) ? $_GET['key'] : null;
 
 try {
-    // Prepare the query to fetch the note and associated files
-    $stmt = $pdo->prepare('
+    if (!$secretKey) {
+        $stmt = $pdo->prepare('
         SELECT 
             n.*, 
             f.id AS file_id, 
@@ -33,17 +33,37 @@ try {
         LEFT JOIN 
             file f ON nf.file_id = f.id
         WHERE 
-            n.id = :note_id
-    ');
+            n.id = :note_id AND n.visibility = "public"
+        ');
     
-    $stmt->bindParam(':note_id', $noteId, PDO::PARAM_INT); // Bind the noteId parameter to prevent SQL injection
+        $stmt->bindParam(':note_id', $noteId, PDO::PARAM_INT);
+    } else {
+        $stmt = $pdo->prepare('
+        SELECT 
+            n.*, 
+            f.id AS file_id, 
+            f.file_name, 
+            f.file_path, 
+            f.uploaded_at 
+        FROM 
+            note n
+        LEFT JOIN 
+            note_file nf ON n.id = nf.note_id
+        LEFT JOIN 
+            file f ON nf.file_id = f.id
+        WHERE 
+            n.id = :note_id AND n.secret_key = :secret_key
+        ');
+    
+        $stmt->bindParam(':note_id', $noteId, PDO::PARAM_INT);
+        $stmt->bindParam(':secret_key', $secretKey, PDO::PARAM_STR);
+    }
+     
     $stmt->execute();
 
-    // Fetch all results
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     if ($results) {
-        // Extract the note information and associated files
         $note = [
             'id' => $results[0]['id'],
             'title' => $results[0]['title'],
@@ -57,7 +77,7 @@ try {
         ];
 
         foreach ($results as $row) {
-            if ($row['file_id']) { // Check if there is an associated file
+            if ($row['file_id']) {
                 $note['files'][] = [
                     'id' => $row['file_id'],
                     'file_name' => $row['file_name'],
@@ -67,15 +87,16 @@ try {
             }
         }
 
-        // Return the note with associated files as JSON
         echo json_encode($note);
     } else {
-        // If note not found, return an error
-        echo json_encode(['error' => 'Note not found']);
+        if ($secretKey) {
+            echo json_encode(['error' => 'Invalid secret key']);
+        } else {
+            echo json_encode(['error' => 'Note not found']);
+        }
     }
 
 } catch (\PDOException $e) {
-    // Catch and return any PDO errors
     echo json_encode(['error' => $e->getMessage()]);
 }
 ?>

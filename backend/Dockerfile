@@ -9,6 +9,12 @@ RUN apt-get update && apt-get install -y \
     git \
     unzip \
     libzip-dev \
+    libgd-dev \
+    libmagickwand-dev \
+    && pecl install imagick \
+    && docker-php-ext-enable imagick \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd \
     && docker-php-ext-configure zip \
     && docker-php-ext-install zip \
     && apt-get clean
@@ -32,7 +38,7 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
 
 # Install PHP extensions
-RUN docker-php-ext-install pdo pdo_mysql
+RUN docker-php-ext-install pdo pdo_mysql bcmath
 
 # Install Composer dependencies if composer.json exists
 RUN if [ -f composer.json ]; then composer install; fi

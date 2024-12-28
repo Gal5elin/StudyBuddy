@@ -1,11 +1,11 @@
 import React, { useState, ChangeEvent, FormEvent } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
-import { ISubject } from "../../models/ISubject"; // Ensure the correct path
+import { ISubject } from "../../models/ISubject";
 
 interface AddNoteModalProps {
   show: boolean;
   handleClose: () => void;
-  onSubmit: (formData: { [key: string]: any }, files: File[]) => void; // Accept multiple files
+  onSubmit: (formData: { [key: string]: any }, files: File[]) => void;
   subjects: ISubject[];
 }
 
@@ -23,7 +23,7 @@ const AddNoteModal: React.FC<AddNoteModalProps> = ({
     secret_key: "",
   });
 
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]); // Store multiple files
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -34,13 +34,14 @@ const AddNoteModal: React.FC<AddNoteModalProps> = ({
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files ? Array.from(e.target.files) : [];
-    setSelectedFiles(files); // Store all selected files
+    setSelectedFiles(files);
   };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    onSubmit(formData, selectedFiles); // Pass form data and all selected files to parent
-    handleClose(); // Close the modal
+    onSubmit(formData, selectedFiles);
+
+    handleClose();
   };
 
   return (
@@ -50,7 +51,6 @@ const AddNoteModal: React.FC<AddNoteModalProps> = ({
       </Modal.Header>
       <Modal.Body>
         <Form onSubmit={handleSubmit}>
-          {/* Title Field */}
           <Form.Group controlId="title" className="mb-3">
             <Form.Label>Note Title</Form.Label>
             <Form.Control
@@ -62,7 +62,6 @@ const AddNoteModal: React.FC<AddNoteModalProps> = ({
             />
           </Form.Group>
 
-          {/* Description Field */}
           <Form.Group controlId="description" className="mb-3">
             <Form.Label>Note Description</Form.Label>
             <Form.Control
@@ -74,7 +73,6 @@ const AddNoteModal: React.FC<AddNoteModalProps> = ({
             />
           </Form.Group>
 
-          {/* Subject Field */}
           <Form.Group controlId="subject" className="mb-3">
             <Form.Label>Subject</Form.Label>
             <Form.Control
@@ -93,7 +91,6 @@ const AddNoteModal: React.FC<AddNoteModalProps> = ({
             </Form.Control>
           </Form.Group>
 
-          {/* Visibility Field */}
           <Form.Group controlId="visibility" className="mb-3">
             <Form.Label>Visibility</Form.Label>
             <div>
@@ -118,7 +115,6 @@ const AddNoteModal: React.FC<AddNoteModalProps> = ({
             </div>
           </Form.Group>
 
-          {/* Secret Key Field (only visible when visibility is 'hidden') */}
           {formData.visibility === "hidden" && (
             <Form.Group controlId="secret_key" className="mb-3">
               <Form.Label>Secret Key</Form.Label>
@@ -133,14 +129,13 @@ const AddNoteModal: React.FC<AddNoteModalProps> = ({
             </Form.Group>
           )}
 
-          {/* Multiple File Upload Field */}
           <Form.Group controlId="fileUpload" className="mb-3">
             <Form.Label>Upload Files</Form.Label>
             <Form.Control
               type="file"
               name="files"
               onChange={handleFileChange}
-              multiple // Allow multiple file selection
+              multiple
               accept="image/*,application/pdf,application/msword"
             />
           </Form.Group>

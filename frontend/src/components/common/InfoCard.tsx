@@ -1,17 +1,22 @@
 import React, { useState } from "react";
 import "./InfoCard.css";
+import QRCode from "react-qr-code";
 
 interface InfocardProps {
   type: "ok" | "error" | "warning";
   title: string;
   description: string;
-  onClose?: () => void;
+  link?: string;
+  choice?: boolean;
+  onClose?: (choice: boolean) => void;
 }
 
 const InfoCard: React.FC<InfocardProps> = ({
   type,
   title,
   description,
+  link,
+  choice,
   onClose,
 }) => {
   const [isVisible, setIsVisible] = useState(true);
@@ -29,9 +34,11 @@ const InfoCard: React.FC<InfocardProps> = ({
     }
   };
 
-  const handleClose = () => {
+  const handleClose = (choice?: boolean) => {
     setIsVisible(false);
-    if (onClose) onClose();
+    if (onClose) {
+      onClose(choice ?? false);
+    }
   };
 
   if (!isVisible) return null;
@@ -43,7 +50,39 @@ const InfoCard: React.FC<InfocardProps> = ({
           <h3>{title}</h3>
         </div>
         <p>{description}</p>
-        <button className="btn btn-primary w-50" onClick={handleClose}>Ok</button>
+        {link && (
+          <>
+            <p>
+              Link: <code>{link}</code>
+            </p>
+            <div className="m-2">
+              <QRCode value={link} />
+            </div>
+          </>
+        )}
+        {choice ? (
+          <div className="d-flex justify-content-between">
+            <button
+              className="btn btn-outline-primary w-50"
+              onClick={() => handleClose(true)}
+            >
+              Yes
+            </button>
+            <button
+              className="btn btn-outline-danger w-50"
+              onClick={() => handleClose(false)}
+            >
+              No
+            </button>
+          </div>
+        ) : (
+          <button
+            className="btn btn-outline-primary w-100"
+            onClick={() => handleClose(true)}
+          >
+            Ok
+          </button>
+        )}
       </div>
     </div>
   );

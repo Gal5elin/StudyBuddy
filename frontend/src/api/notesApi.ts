@@ -40,59 +40,113 @@ export const getNoteById = async (noteId: string): Promise<INote> => {
   }
 };
 
+export const getNoteByUser = async (): Promise<INote[]> => {
+  const token = localStorage.getItem("token");
+
+  try {
+    const response = await axios.get<INote[]>(
+      `${BASE_URL}/getNotesByUser.php`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error("Error fetching note:", error.message || error);
+    throw new Error("Unable to fetch the note. Please try again later.");
+  }
+};
+
+export const getHiddenNote = async (noteId: string, secretKey: string) => {
+  try {
+    const response = await axios.get<INote>(
+      `${BASE_URL}/getNoteById.php?noteId=${noteId}&key=${secretKey}`
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error("Error fetching note:", error.message || error);
+    throw new Error("Unable to fetch the note. Please try again later.");
+  }
+};
+
 export const addNote = async (formData: { [key: string]: any }) => {
   const token = localStorage.getItem("token");
 
-  // Ensure token exists before proceeding
   if (!token) {
-    throw new Error("Authorization token is missing");
+    throw new Error("is missing");
   }
 
   try {
-    // Send the form data as JSON in the body of the request
     const response = await axios.post(`${BASE_URL}/addNote.php`, formData, {
       headers: {
         Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json", // Ensure the backend knows we're sending JSON
+        "Content-Type": "application/json",
       },
     });
 
     return response.data;
   } catch (error: any) {
-    // Handle backend-specific errors if available
     if (error.response && error.response.data && error.response.data.error) {
       throw new Error(error.response.data.error);
     } else {
-      // Throw a generic error if no specific error message is returned
       throw new Error("An unknown error occurred while adding the note.");
     }
   }
 };
 
-export const uploadFile = async (file: File, noteId: number) => {
+export const updateNote = async (
+  noteId: number,
+  formData: { [key: string]: any }
+) => {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    throw new Error("is missing");
+  }
+
+  try {
+    const response = await axios.put(
+      `${BASE_URL}/updateNote.php`,
+      {
+        id: noteId,
+        ...formData,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.data && error.response.data.error) {
+      throw new Error(error.response.data.error);
+    } else {
+      throw new Error("An unknown error occurred while updating the note.");
+    }
+  }
+};
+
+export const uploadFile = async (form: FormData) => {
   const token = localStorage.getItem("token");
 
   if (!token) {
     throw new Error("Authorization token is missing");
   }
 
-  if (!noteId) {
-    throw new Error("Note ID is required to associate the file with the note.");
-  }
-
-  const formData = new FormData();
-  formData.append("file", file); // Append the file
-  formData.append("note_id", noteId.toString()); // Append the note_id to associate with the file
-
   try {
-    const response = await axios.post(`${BASE_URL}/uploadFile.php`, formData, {
+    const response = await axios.post(`${BASE_URL}/uploadFile.php`, form, {
       headers: {
-        Authorization: `Bearer ${token}`, // Include the token for authorization
-        "Content-Type": "multipart/form-data", // Required for file upload
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
       },
     });
 
-    return response.data; // Return the response data (success message or file metadata)
+    return response.data;
   } catch (error: any) {
     if (error.response && error.response.data && error.response.data.error) {
       throw new Error(error.response.data.error);
@@ -103,12 +157,6 @@ export const uploadFile = async (file: File, noteId: number) => {
 };
 
 export const downloadFile = async (noteId: number) => {
-  const token = localStorage.getItem("token");
-
-  if (!token) {
-    throw new Error("Authorization token is missing");
-  }
-
   if (!noteId) {
     throw new Error("Note ID is required to fetch the file.");
   }
@@ -116,18 +164,14 @@ export const downloadFile = async (noteId: number) => {
   try {
     const response = await axios.get(`${BASE_URL}/serveFile.php`, {
       params: { note_id: noteId },
-      headers: {
-        Authorization: `Bearer ${token}`, // Include the token for authorization
-      },
-      responseType: "blob", // Set the response type to blob for file download
+      responseType: "blob",
     });
 
-    // Create a link to download the file
     const blob = response.data;
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = noteId.toString(); // You can specify the filename here if available
+    link.download = noteId.toString();
     link.click();
     window.URL.revokeObjectURL(url);
   } catch (error: any) {
@@ -139,23 +183,16 @@ export const downloadFile = async (noteId: number) => {
   }
 };
 
-export const serveFile = async (noteId: number, fileId: number): Promise<string> => {
-  const token = localStorage.getItem("token");
-
-  if (!token) {
-    throw new Error("Authorization token is missing.");
-  }
-
+export const serveFile = async (
+  noteId: number,
+  fileId: number
+): Promise<string> => {
   try {
     const response = await axios.get(`${BASE_URL}/serveFile.php`, {
       params: { note_id: noteId, file_id: fileId },
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      responseType: "blob", // Important for binary data
+      responseType: "blob",
     });
 
-    // Create a Blob URL for the PDF
     return URL.createObjectURL(response.data);
   } catch (error: any) {
     throw new Error(
@@ -165,7 +202,30 @@ export const serveFile = async (noteId: number, fileId: number): Promise<string>
   }
 };
 
-export const getNoteFiles = async (noteId: number) => {
+export const downloadAllFiles = async (noteId: number) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/serveFile.php`, {
+      params: { note_id: noteId, download_all: true },
+      responseType: "blob",
+    });
+
+    const filename = "files.zip";
+
+    const blob = new Blob([response.data], { type: "application/zip" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+  } catch (error: any) {
+    console.error("Error downloading files:", error);
+    throw new Error("Failed to download files.");
+  }
+};
+
+export const deleteNote = async (noteId: number) => {
   const token = localStorage.getItem("token");
 
   if (!token) {
@@ -173,7 +233,7 @@ export const getNoteFiles = async (noteId: number) => {
   }
 
   try {
-    const response = await axios.get(`${BASE_URL}/getNoteFiles.php`, {
+    const response = await axios.delete(`${BASE_URL}/deleteNote.php`, {
       params: { note_id: noteId },
       headers: {
         Authorization: `Bearer ${token}`,
@@ -184,44 +244,7 @@ export const getNoteFiles = async (noteId: number) => {
   } catch (error: any) {
     throw new Error(
       error.response?.data?.error ||
-        "An unknown error occurred while fetching the note files."
+        "An unknown error occurred while deleting the note."
     );
   }
 };
-
-
-export const downloadAllFiles = async (noteId: number) => {
-  const token = localStorage.getItem("token");
-
-  if (!token) {
-    throw new Error("Authorization token is missing.");
-  }
-
-  try {
-    const response = await axios.get(`${BASE_URL}/serveFile.php`, {
-      params: { note_id: noteId, download_all: true },
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      responseType: "blob", // Handle file as blob
-    });
-
-    // Extract filename from Content-Disposition or use default
-    //const contentDisposition = response.headers["content-disposition"];
-    const filename = "files.zip";
-
-    // Create a blob and trigger download
-    const blob = new Blob([response.data], { type: "application/zip" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(link.href); // Clean up URL
-  } catch (error: any) {
-    console.error("Error downloading files:", error);
-    throw new Error("Failed to download files.");
-  }
-};
-

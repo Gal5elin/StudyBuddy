@@ -1,7 +1,6 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import "./index.css";
 import App from "./App.tsx";
 import NoteList from "./components/Notes/NoteList.tsx";
 import SubjectList from "./components/Subjects/SubjectList.tsx";
@@ -33,12 +32,20 @@ const router = createBrowserRouter([
       },
       {
         path: "/dashboard",
-        element: <Dashboard />
+        element: <Dashboard />,
       },
       {
         path: "/subject/:id/notes/:noteId",
         element: <NoteDetails />,
-      }
+      },
+      {
+        path: "/dashboard/:noteId",
+        element: <NoteDetails />,
+      },
+      {
+        path: "/note/:noteId",
+        element: <NoteDetails />,
+      },
     ],
   },
 ]);

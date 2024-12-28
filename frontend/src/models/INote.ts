@@ -5,6 +5,7 @@ export enum Visibility {
 
 export interface INoteFile {
   id: number;
+  file_id?: number;
   file_name: string;
   file_path: string;
   uploaded_at: string;

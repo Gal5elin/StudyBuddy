@@ -5,7 +5,7 @@ import { toolbarPlugin } from "@react-pdf-viewer/toolbar";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/toolbar/lib/styles/index.css";
 
-const PDFViewer = ({ noteId, fileId }: { noteId: number, fileId: number }) => {
+const PDFViewer = ({ noteId, fileId }: { noteId: number; fileId: number }) => {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -28,7 +28,6 @@ const PDFViewer = ({ noteId, fileId }: { noteId: number, fileId: number }) => {
 
     fetchPdf();
 
-    // Cleanup blob URL on unmount
     return () => {
       if (pdfUrl) URL.revokeObjectURL(pdfUrl);
     };

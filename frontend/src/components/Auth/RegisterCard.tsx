@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { register } from "../../api/authApi";
-//import { IUser } from "../../models/IUser";
+import InfoCard from "../common/InfoCard";
 
 const RegisterCard = () => {
   const [email, setEmail] = useState("");
@@ -10,6 +10,11 @@ const RegisterCard = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [profilePic, setProfilePic] = useState<File | null>(null);
   const [passwordMatch, setPasswordMatch] = useState(true);
+  const [info, setInfo] = useState<{
+    type: "ok" | "error" | "warning";
+    title: string;
+    description: string;
+  } | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -58,9 +63,18 @@ const RegisterCard = () => {
     register(formData)
       .then((response) => {
         if (response.success) {
-          console.log("User registered:", response.user);
+          setInfo({
+            type: "ok",
+            title: "Registration Successful",
+            description: "You have been successfully registered.",
+          });
         } else {
           console.error("Registration failed:", response);
+          setInfo({
+            type: "error",
+            title: "Registration Failed",
+            description: response.error,
+          });
         }
       })
       .catch((error) => {
@@ -68,8 +82,21 @@ const RegisterCard = () => {
       });
   };
 
+  const handleCloseInfoCard = () => {
+    //navigate("/");
+    //window.location.reload();
+  };
+
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100">
+      {info && (
+        <InfoCard
+          type={info.type}
+          title={info.title}
+          description={info.description}
+          onClose={handleCloseInfoCard}
+        />
+      )}
       <div className="card shadow-lg" style={{ width: "400px" }}>
         <div className="card-body">
           <h5 className="card-title text-center">Register</h5>

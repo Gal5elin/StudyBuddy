@@ -8,7 +8,7 @@ import { useUser } from "./UserContext";
 const LoginCard = () => {
   const navigate = useNavigate();
   const { setUser } = useUser();
-  
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [info, setInfo] = useState<{
@@ -43,7 +43,6 @@ const LoginCard = () => {
     login(user)
       .then((response) => {
         if (response.success) {
-          console.log("User logged in. Token stored in localStorage.", response.user);
           setUser(response.user);
           setInfo({
             type: "ok",
@@ -70,8 +69,9 @@ const LoginCard = () => {
   };
 
   const handleCloseInfoCard = () => {
-    navigate("/");
-    window.location.reload();
+    if (info?.type === "ok") {
+      navigate("/dashboard");
+    }
   };
 
   return (

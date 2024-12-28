@@ -1,12 +1,11 @@
-import { Outlet, useLocation } from 'react-router-dom';
-import './App.css';
-import Navbar from './components/Navbar';
-import WelcomePage from './components/WelcomePage';
-import { UserProvider } from './components/Auth/UserContext';
+import { Outlet, useLocation } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import WelcomePage from "./components/WelcomePage";
+import { UserProvider } from "./components/Auth/UserContext";
 
 function App() {
   const location = useLocation();
-  const isRootPath = location.pathname === '/';
+  const isRootPath = location.pathname === "/";
 
   return (
     <UserProvider>
