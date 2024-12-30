@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ISubject } from "../../models/ISubject";
-import { getSubjects } from "../../api/subjectsApi";
+import { addSubject, getSubjects } from "../../api/subjectsApi";
 import SubjectCard from "./SubjectCard";
 import { Alert, Button } from "react-bootstrap";
 import AddNoteModal from "../common/AddNoteModal";
@@ -8,12 +8,15 @@ import { addNote, uploadFile } from "../../api/notesApi";
 import { useNavigate } from "react-router-dom";
 import InfoCard from "../common/InfoCard";
 import { useUser } from "../Auth/UserContext";
+import AddSubjectModal from "../common/AddSubjectModal";
+import { BsPlus } from "react-icons/bs";
 
 const SubjectList = () => {
   const { user } = useUser();
   const [subjects, setSubjects] = useState<ISubject[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [showSubjectModal, setShowSubjectModal] = useState<boolean>(false);
   const [noteId, setNoteId] = useState<string | null>(null);
   const [info, setInfo] = useState<{
     type: "ok" | "error" | "warning";
@@ -26,15 +29,16 @@ const SubjectList = () => {
 
   const navigate = useNavigate();
 
+  const fetchSubjects = async () => {
+    try {
+      const allSubjects = await getSubjects();
+      setSubjects(allSubjects);
+    } catch (error) {
+      console.error("Error fetching subjects:", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchSubjects = async () => {
-      try {
-        const allSubjects = await getSubjects();
-        setSubjects(allSubjects);
-      } catch (error) {
-        console.error("Error fetching subjects:", error);
-      }
-    };
     fetchSubjects();
   }, []);
 
@@ -44,6 +48,25 @@ const SubjectList = () => {
 
   const handleShowModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
+
+  const handleShowSubjectModal = () => setShowSubjectModal(true);
+  const handleCloseSubjectModal = () => setShowSubjectModal(false);
+
+  const handleSubjectSubmit = async (formData: ISubject) => {
+    try {
+      await addSubject(formData);
+      setShowSubjectModal(false);
+      fetchSubjects();
+      setInfo({
+        type: "ok",
+        title: "Subject Added",
+        description: "New subject has been added successfully",
+      });
+    } catch (error: any) {
+      console.error("Error adding subject:", error);
+      setError("Failed to add subject. Please try again.");
+    }
+  };
 
   const handleFormSubmit = async (
     formData: { [key: string]: any },
@@ -97,13 +120,52 @@ const SubjectList = () => {
 
   return (
     <>
-      <h1 className="text-center my-4">Subjects</h1>
+      <div className="d-flex align-items-center justify-content-center my-4">
+        <h1 className="mb-0">Subjects</h1>
+        {user?.role === "admin" && (
+          <Button
+            variant="outline-success"
+            className="ms-3 d-flex align-items-center"
+            onClick={handleShowSubjectModal}
+          >
+            <BsPlus
+              style={{
+                fontSize: "1.8rem",
+                verticalAlign: "middle",
+                marginLeft: "-7px",
+                marginRight: "-2px",
+              }}
+            />
+            New Subject
+          </Button>
+        )}
+      </div>
+
       {user && (
         <div className="d-flex justify-content-center mt-4">
-          <Button variant="primary" onClick={handleShowModal}>
-            Add New Note
+          <Button
+            variant="primary"
+            className="ms-3 d-flex align-items-center"
+            onClick={handleShowModal}
+          >
+            <BsPlus
+              style={{
+                fontSize: "1.8rem",
+                verticalAlign: "middle",
+                marginLeft: "-7px",
+                marginRight: "-2px",
+              }}
+            />
+            New Note
           </Button>
         </div>
+      )}
+      {showSubjectModal && (
+        <AddSubjectModal
+          show={showSubjectModal}
+          handleClose={handleCloseSubjectModal}
+          onSubmit={handleSubjectSubmit}
+        />
       )}
       {showModal && (
         <AddNoteModal

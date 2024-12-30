@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { register } from "../../api/authApi";
 import InfoCard from "../common/InfoCard";
 
@@ -15,6 +15,8 @@ const RegisterCard = () => {
     title: string;
     description: string;
   } | null>(null);
+
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -83,8 +85,9 @@ const RegisterCard = () => {
   };
 
   const handleCloseInfoCard = () => {
-    //navigate("/");
-    //window.location.reload();
+    if (info?.type === "ok") {
+      navigate("/login");
+    }
   };
 
   return (

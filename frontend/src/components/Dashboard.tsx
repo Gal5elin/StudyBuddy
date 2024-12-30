@@ -198,6 +198,7 @@ const Dashboard = () => {
   };
 
   const groupNotesBySubject = (notes: INote[]) => {
+    console.log(notes);
     return notes.reduce((groups, note) => {
       const subjectId = note.subject_id || "Unassigned";
       if (!groups[subjectId]) {
@@ -247,6 +248,7 @@ const Dashboard = () => {
             </div>
           </div>
 
+          <h3 className="mb-3">My notes</h3>
           {Object.keys(groupedNotes).length > 0 ? (
             <div>
               {Object.entries(groupedNotes).map(([subjectId, notes]) => (

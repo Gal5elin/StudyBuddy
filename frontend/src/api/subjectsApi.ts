@@ -24,3 +24,16 @@ export const getSubjectById = async (subjectId: string): Promise<ISubject> => {
     throw error;
   }
 };
+
+export const addSubject = async (subject: ISubject): Promise<ISubject> => {
+  try {
+    const response = await axios.post<ISubject>(
+      `${BASE_URL}/addSubject.php`,
+      subject
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error adding subject:", error);
+    throw error;
+  }
+}

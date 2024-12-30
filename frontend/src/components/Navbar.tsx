@@ -7,16 +7,12 @@ const Navbar = () => {
   const { user, loading } = useUser();
 
   useEffect(() => {
-    let isMounted = true;
-
     const fetchProfilePic = async () => {
       try {
         const picUrl = await getProfilePic();
-        if (isMounted) {
-          setProfilePic(picUrl);
-        }
+        setProfilePic(picUrl);
       } catch (error) {
-        console.error("Failed to fetch profile picture", error);
+        setProfilePic(null);
       }
     };
 
@@ -30,9 +26,8 @@ const Navbar = () => {
       if (profilePic) {
         URL.revokeObjectURL(profilePic);
       }
-      isMounted = false;
     };
-  }, [user]);
+  }, [user, loading]);
 
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
@@ -57,9 +52,12 @@ const Navbar = () => {
               Subjects
             </a>
           </div>
-          <div className="ms-auto">
+          <div className="ms-auto d-flex align-items-center">
             {user ? (
-              <a className="nav-link" href="/dashboard">
+              <a
+                className="nav-link d-flex align-items-center"
+                href="/dashboard"
+              >
                 {profilePic ? (
                   <img
                     src={profilePic}
@@ -69,8 +67,12 @@ const Navbar = () => {
                     height="30"
                   />
                 ) : (
-                  <span className="badge bg-secondary"></span>
+                  <div
+                    className="bg-secondary rounded-circle"
+                    style={{ width: "30px", height: "30px" }}
+                  ></div>
                 )}
+                <span className="ms-2">{user.username}</span>
               </a>
             ) : (
               <a className="nav-link" href="/login">

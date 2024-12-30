@@ -32,7 +32,8 @@ try {
                 'exp' => $expirationTime,
                 'username' => $user['username'],
                 'userId' => $user['id'],
-                'profile_pic' => $user['profile_pic']
+                'profile_pic' => $user['profile_pic'],
+                'role' => $user['role']
             ];
 
             $jwt = JWT::encode($payload, $secretKey, 'HS256');
