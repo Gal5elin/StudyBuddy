@@ -50,7 +50,7 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
           </Form.Group>
 
           <Button variant="primary" type="submit">
-            Add Note
+            Add Subject
           </Button>
         </Form>
       </Modal.Body>

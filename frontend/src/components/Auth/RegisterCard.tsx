@@ -1,7 +1,8 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { register } from "../../api/authApi";
+import { register, sendMail } from "../../api/authApi";
 import InfoCard from "../common/InfoCard";
+import "./RegisterCard.css";
 
 const RegisterCard = () => {
   const [email, setEmail] = useState("");
@@ -15,6 +16,7 @@ const RegisterCard = () => {
     title: string;
     description: string;
   } | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -46,13 +48,15 @@ const RegisterCard = () => {
     }
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     if (password !== confirmPassword) {
       setPasswordMatch(false);
       return;
     }
+
+    setIsLoading(true);
 
     const formData = new FormData();
     formData.append("email", email);
@@ -62,36 +66,55 @@ const RegisterCard = () => {
       formData.append("profile_pic", profilePic);
     }
 
-    register(formData)
-      .then((response) => {
+    try {
+      const mailData = await sendMail(email);
+      if (mailData.success) {
+        const response = await register(formData);
         if (response.success) {
           setInfo({
             type: "ok",
             title: "Registration Successful",
-            description: "You have been successfully registered.",
+            description:
+              "You have been successfully registered. Please check your email for further instructions.",
           });
         } else {
-          console.error("Registration failed:", response);
           setInfo({
             type: "error",
             title: "Registration Failed",
-            description: response.error,
+            description: response.error || "An unknown error occurred.",
           });
         }
-      })
-      .catch((error) => {
-        console.error("Error registering:", error);
+      } else {
+        setInfo({
+          type: "error",
+          title: "Email Sending Failed",
+          description:
+            mailData.error ||
+            "An unknown error occurred while sending the email.",
+        });
+      }
+    } catch (error) {
+      console.error("Error in the process:", error);
+      setInfo({
+        type: "error",
+        title: "Process Error",
+        description:
+          "An error occurred while processing your request. Please try again later.",
       });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCloseInfoCard = () => {
     if (info?.type === "ok") {
       navigate("/login");
     }
+    setInfo(null);
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center min-vh-100">
+    <div className="d-flex justify-content-center align-items-center min-vh-100 position-relative">
       {info && (
         <InfoCard
           type={info.type}
@@ -100,10 +123,21 @@ const RegisterCard = () => {
           onClose={handleCloseInfoCard}
         />
       )}
-      <div className="card shadow-lg" style={{ width: "400px" }}>
+      {isLoading && (
+        <div className="loading-spinner position-absolute top-50 start-50 translate-middle">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      )}
+      <div
+        className={`card shadow-lg ${isLoading ? "blur-background" : ""}`} // Apply blur class if loading
+        style={{ width: "400px" }}
+      >
         <div className="card-body">
           <h5 className="card-title text-center">Register</h5>
           <form onSubmit={handleSubmit}>
+            {/* Form Fields */}
             <div className="mb-3">
               <label htmlFor="email" className="form-label">
                 E-mail:
@@ -119,7 +153,6 @@ const RegisterCard = () => {
                 required
               />
             </div>
-
             <div className="mb-3">
               <label htmlFor="username" className="form-label">
                 Username:
@@ -135,7 +168,6 @@ const RegisterCard = () => {
                 required
               />
             </div>
-
             <div className="mb-3">
               <label htmlFor="password" className="form-label">
                 Password:
@@ -149,12 +181,17 @@ const RegisterCard = () => {
                 value={password}
                 onChange={handleChange}
                 style={{
-                  backgroundColor: passwordMatch ? "" : "#FFCCCB",
+                  backgroundColor: password.length > 0 && password.length < 8 ? "#FFCCCB" : "",
                 }}
                 required
               />
+              {password.length > 0 && password.length < 8 && (
+                <small className="text-danger">
+                  Password must be at least 8 characters
+                  long.
+                </small>
+              )}
             </div>
-
             <div className="mb-3">
               <label htmlFor="confirm_password" className="form-label">
                 Confirm password:
@@ -172,8 +209,12 @@ const RegisterCard = () => {
                 }}
                 required
               />
+              {!passwordMatch && (
+                <small className="text-danger">
+                  Passwords do not match.
+                </small>
+              )}
             </div>
-
             <div className="mb-3">
               <label htmlFor="profile_pic" className="form-label">
                 Profile Picture:
@@ -187,7 +228,6 @@ const RegisterCard = () => {
                 onChange={handleChange}
               />
             </div>
-
             <button type="submit" className="btn btn-primary w-100 mb-2">
               Register
             </button>

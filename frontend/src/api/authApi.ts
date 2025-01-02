@@ -78,3 +78,14 @@ export const isLoggedIn = async () => {
     return false;
   }
 };
+
+export const sendMail = async (email: string) => {
+  try {
+    const response = await axios.post(`${BASE_URL}/sendMail.php`, { email });
+    console.log("Mail sent:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error sending mail:", error);
+    throw error;
+  }
+}

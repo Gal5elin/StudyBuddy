@@ -72,6 +72,7 @@ const LoginCard = () => {
     if (info?.type === "ok") {
       navigate("/dashboard");
     }
+    setInfo(null);
   };
 
   return (

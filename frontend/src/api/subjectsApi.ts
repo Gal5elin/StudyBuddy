@@ -27,13 +27,23 @@ export const getSubjectById = async (subjectId: string): Promise<ISubject> => {
 
 export const addSubject = async (subject: ISubject): Promise<ISubject> => {
   try {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      throw new Error("is missing");
+    }
+
     const response = await axios.post<ISubject>(
-      `${BASE_URL}/addSubject.php`,
-      subject
+      `${BASE_URL}/addSubject.php`, subject,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
     return response.data;
   } catch (error) {
     console.error("Error adding subject:", error);
     throw error;
   }
-}
+};

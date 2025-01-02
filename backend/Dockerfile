@@ -45,3 +45,6 @@ RUN if [ -f composer.json ]; then composer install; fi
 
 # Configure Apache for the uploads directory to restrict access
 RUN echo '<Directory /var/www/html/uploads>\n    Options -Indexes +FollowSymLinks\n    AllowOverride None\n    Require all denied\n</Directory>' >> /etc/apache2/apache2.conf
+
+# Fix pdf conversion premission
+RUN sed -i '/<\/policymap>/i <policy domain="coder" rights="read | write" pattern="PDF" />' /etc/ImageMagick-6/policy.xml

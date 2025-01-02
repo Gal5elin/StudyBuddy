@@ -1,5 +1,6 @@
 #Custom
 /backend/src/uploads/profile_pics/*
+/backend/src/vendor/
 
 # Logs
 logs

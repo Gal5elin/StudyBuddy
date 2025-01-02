@@ -115,7 +115,9 @@ const SubjectList = () => {
 
   const handleCloseInfoCard = () => {
     setInfo(null);
-    navigate(`/note/${noteId}`);
+    if (noteId) {
+      navigate(`/note/${noteId}`);
+    }
   };
 
   return (
