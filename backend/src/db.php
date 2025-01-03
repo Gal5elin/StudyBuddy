@@ -1,8 +1,13 @@
 <?php
-$host = 'mysql';
-$db = 'StudyBuddy';
-$user = 'Gal';
-$pass = 'geslo';
+require __DIR__ . '/vendor/autoload.php';
+
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+$host = $_ENV['DB_HOST'];
+$db = $_ENV['DB'];
+$user = $_ENV['DB_USER'];
+$pass = $_ENV['DB_PASSWORD'];
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";

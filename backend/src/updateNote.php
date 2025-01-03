@@ -53,6 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     }
 
     try {
+        updateNote($pdo, $note_id, $title, $description, $subject, $visibility, $secret_key, $user_id);
         updateNoteFiles($pdo, $note_id, $files, $user_id);
 
         respondWithSuccess('Note updated successfully');
@@ -61,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         respondWithError('Error updating note: ' . $e->getMessage());
     }
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    include 'uploadFile.php'; // Handle file uploads
+    include 'uploadFile.php';
 } else {
     respondWithError('Invalid request method');
 }

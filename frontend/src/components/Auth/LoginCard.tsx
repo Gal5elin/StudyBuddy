@@ -4,6 +4,7 @@ import { IUser } from "../../models/IUser";
 import { login } from "../../api/authApi";
 import InfoCard from "../common/InfoCard";
 import { useUser } from "./UserContext";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const LoginCard = () => {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ const LoginCard = () => {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [info, setInfo] = useState<{
     type: "ok" | "error" | "warning";
     title: string;
@@ -40,8 +42,9 @@ const LoginCard = () => {
       password: password,
     };
 
-    login(user)
-      .then((response) => {
+    const loginUser = async (user: IUser) => {
+      try {
+        const response = await login(user);
         if (response.success) {
           setUser(response.user);
           setInfo({
@@ -57,15 +60,17 @@ const LoginCard = () => {
             description: response.error,
           });
         }
-      })
-      .catch((error) => {
-        console.error("Error logging in:", error.message);
+      } catch (error) {
+        console.error("Error logging in:", error);
         setInfo({
           type: "error",
           title: "Error",
           description: "An unexpected error occurred. Please try again later.",
         });
-      });
+      }
+    };
+
+    loginUser(user);
   };
 
   const handleCloseInfoCard = () => {
@@ -104,19 +109,47 @@ const LoginCard = () => {
               />
             </div>
 
-            <div className="mb-3">
+            <div className="mb-3 position-relative">
               <label htmlFor="password" className="form-label">
                 Password:
               </label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                className="form-control"
-                placeholder="Enter your password"
-                onChange={handleChange}
-                required
-              />
+              <div className="d-flex align-items-center">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  name="password"
+                  className="form-control"
+                  placeholder="Enter your password"
+                  onChange={handleChange}
+                  required
+                />
+                <button
+                  type="button"
+                  className="btn btn-link position-absolute end-0 me-2"
+                  style={{
+                    zIndex: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: 0,
+                  }}
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <FaEyeSlash
+                      style={{
+                        fontSize: "1.4rem",
+                      }}
+                    />
+                  ) : (
+                    <FaEye
+                      style={{
+                        fontSize: "1.4rem",
+                      }}
+                    />
+                  )}
+                </button>
+              </div>
             </div>
 
             <button type="submit" className="btn btn-primary w-100 mb-2">

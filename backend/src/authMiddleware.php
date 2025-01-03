@@ -1,4 +1,9 @@
 <?php
+require __DIR__ . '/vendor/autoload.php';
+
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
 ob_start();
 
 header("Access-Control-Allow-Origin: http://localhost:5173");
@@ -21,7 +26,7 @@ if (isset($headers['Authorization'])) {
     $token = str_replace("Bearer ", "", $headers['Authorization']);
 
     try {
-        $decoded = JWT::decode($token, new Key("b1e8a6b381845e4feca95cd76cb5823436772ea4a120254df4c346b927b24513", 'HS256'));
+        $decoded = JWT::decode($token, new Key($_ENV['JWT_SECRET'], 'HS256'));
         $GLOBALS['user'] = (object) $decoded;
     } catch (Exception $e) {
         error_log("JWT Decoding failed: " . $e->getMessage());

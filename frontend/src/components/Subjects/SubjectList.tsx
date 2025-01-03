@@ -82,8 +82,6 @@ const SubjectList = () => {
       const noteId = noteResponse.data.noteId;
       const visibility = formData.visibility;
 
-      console.log(formData);
-
       if (visibility === "hidden") {
         setNoteId(`${noteId}?key=${formData.secret_key}`);
       } else {

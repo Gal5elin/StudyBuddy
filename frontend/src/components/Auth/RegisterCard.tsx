@@ -75,7 +75,7 @@ const RegisterCard = () => {
             type: "ok",
             title: "Registration Successful",
             description:
-              "You have been successfully registered. Please check your email for further instructions.",
+              "You have been successfully registered. You can login now.",
           });
         } else {
           setInfo({
@@ -131,7 +131,7 @@ const RegisterCard = () => {
         </div>
       )}
       <div
-        className={`card shadow-lg ${isLoading ? "blur-background" : ""}`} // Apply blur class if loading
+        className={`card shadow-lg ${isLoading ? "blur-background" : ""}`}
         style={{ width: "400px" }}
       >
         <div className="card-body">

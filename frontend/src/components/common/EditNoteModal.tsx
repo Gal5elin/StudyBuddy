@@ -205,19 +205,16 @@ const EditNoteModal: React.FC<EditNoteModalProps> = ({
             <Form.Label>Existing Files</Form.Label>
             <ul>
               {existingFiles.map((file: INoteFile) => (
-                <li key={file.file_id}>
-                  <a
-                    href={file.file_path}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {file.file_name}
-                  </a>
+                <li
+                  key={file.file_id}
+                  className="d-flex justify-content-between align-items-center"
+                >
+                  <p className="mb-0">{file.file_name}</p>
                   <Button
                     variant="danger"
                     size="sm"
                     onClick={() => handleRemoveExistingFile(file.file_id!)}
-                    className="m-1"
+                    className="ms-auto mb-2"
                   >
                     Remove
                   </Button>
@@ -233,7 +230,7 @@ const EditNoteModal: React.FC<EditNoteModalProps> = ({
               name="files"
               onChange={handleFileChange}
               multiple
-              accept="image/*,application/pdf,application/msword"
+              accept="image/*,application/pdf"
             />
           </Form.Group>
 

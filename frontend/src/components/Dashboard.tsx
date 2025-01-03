@@ -34,28 +34,28 @@ const Dashboard = () => {
   const [editingNote, setEditingNote] = useState<INote | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<INote | null>(null);
 
+  const fetchNotes = async () => {
+    setLoadingNotes(true);
+    try {
+      const data = await getNoteByUser();
+      setNotes(data);
+    } catch (error) {
+      console.error("Error fetching notes:", error);
+    } finally {
+      setLoadingNotes(false);
+    }
+  };
+
+  const fetchSubjects = async () => {
+    try {
+      const data = await getSubjects();
+      setSubjects(data);
+    } catch (error) {
+      console.error("Error fetching subjects:", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchNotes = async () => {
-      setLoadingNotes(true);
-      try {
-        const data = await getNoteByUser();
-        setNotes(data);
-      } catch (error) {
-        console.error("Error fetching notes:", error);
-      } finally {
-        setLoadingNotes(false);
-      }
-    };
-
-    const fetchSubjects = async () => {
-      try {
-        const data = await getSubjects();
-        setSubjects(data);
-      } catch (error) {
-        console.error("Error fetching subjects:", error);
-      }
-    };
-
     if (!loading && !user && !loggedOut) {
       navigate("/login");
     }
@@ -81,11 +81,16 @@ const Dashboard = () => {
       setUser(null);
       navigate("/");
     }
+  
     if (info?.choice === true) {
       handleConfirmDelete(true);
+    } else if (info?.choice === false) {
+      handleConfirmDelete(false);
     }
+  
     setInfo(null);
   };
+  
 
   const handleEdit = (note: INote) => {
     setEditingNote(note);
@@ -180,9 +185,7 @@ const Dashboard = () => {
 
       setNotes((prevNotes) =>
         prevNotes
-          ? prevNotes.map((note) =>
-              note.id === updatedNote.id ? updatedNote : note
-            )
+          ? prevNotes.map((n) => (n.id === updatedNote.id ? updatedNote : n))
           : null
       );
 
@@ -193,12 +196,15 @@ const Dashboard = () => {
         description: "The note has been successfully updated.",
       });
     } catch (error) {
-      console.error("Error updating note:", error);
+      setInfo({
+        type: "ok",
+        title: "Note Updated",
+        description: "The note has been successfully updated.",
+      });
     }
   };
 
   const groupNotesBySubject = (notes: INote[]) => {
-    console.log(notes);
     return notes.reduce((groups, note) => {
       const subjectId = note.subject_id || "Unassigned";
       if (!groups[subjectId]) {
@@ -276,9 +282,7 @@ const Dashboard = () => {
               ))}
             </div>
           ) : (
-            <p className="text-muted">
-              No notes available. Start creating some!
-            </p>
+            <p className="text-muted">No notes available.</p>
           )}
         </div>
       )}

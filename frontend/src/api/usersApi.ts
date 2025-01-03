@@ -2,9 +2,8 @@ import axios from "axios";
 
 const BASE_URL = "http://localhost:8080";
 
-const token = localStorage.getItem("token");
-
 export const getProfilePic = async () => {
+  const token = localStorage.getItem("token");
   if (!token) {
     console.error("No token found");
     throw new Error("Token not found");

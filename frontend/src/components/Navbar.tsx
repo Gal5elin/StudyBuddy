@@ -6,27 +6,19 @@ const Navbar = () => {
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const { user, loading } = useUser();
 
-  useEffect(() => {
-    const fetchProfilePic = async () => {
-      try {
-        const picUrl = await getProfilePic();
-        setProfilePic(picUrl);
-      } catch (error) {
-        setProfilePic(null);
-      }
-    };
-
-    if (user && !loading) {
-      fetchProfilePic();
-    } else {
+  const fetchProfilePic = async () => {
+    try {
+      const picUrl = await getProfilePic();
+      setProfilePic(picUrl);
+    } catch (error) {
       setProfilePic(null);
     }
+  };
 
-    return () => {
-      if (profilePic) {
-        URL.revokeObjectURL(profilePic);
-      }
-    };
+  useEffect(() => {
+    if (user && !loading) {
+      fetchProfilePic();
+    }
   }, [user, loading]);
 
   return (
@@ -54,14 +46,10 @@ const Navbar = () => {
           </div>
           <div className="ms-auto d-flex align-items-center">
             {user ? (
-              <a
-                className="nav-link d-flex align-items-center"
-                href="/dashboard"
-              >
-                {profilePic ? (
+              <a className="nav-link d-flex align-items-center" href="/dashboard">
+                {profilePic && user && !loading ? (
                   <img
                     src={profilePic}
-                    alt="Profile"
                     className="rounded-circle"
                     width="30"
                     height="30"

@@ -3,7 +3,7 @@ include 'db.php';
 include 'authMiddleware.php';
 require_once 'vendor/autoload.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'PUT') {
     if (isset($_FILES['file']) && isset($_POST['note_id'])) {
         try {
             $note_id = (int)$_POST['note_id'];
@@ -123,8 +123,11 @@ function convertImagesToPDF($imagePaths, $outputPDF) {
     }
 }
 
-function respondWithError($message) {
-    http_response_code(400);
-    echo json_encode(['error' => $message]);
-    exit;
+if (!function_exists('respondWithError')) {
+    function respondWithError($message) {
+        http_response_code(400);
+        echo json_encode(['error' => $message]);
+        exit;
+    }
 }
+

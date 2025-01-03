@@ -38,7 +38,7 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
 
 # Install PHP extensions
-RUN docker-php-ext-install pdo pdo_mysql bcmath
+RUN docker-php-ext-install pdo pdo_mysql
 
 # Install Composer dependencies if composer.json exists
 RUN if [ -f composer.json ]; then composer install; fi
@@ -46,5 +46,5 @@ RUN if [ -f composer.json ]; then composer install; fi
 # Configure Apache for the uploads directory to restrict access
 RUN echo '<Directory /var/www/html/uploads>\n    Options -Indexes +FollowSymLinks\n    AllowOverride None\n    Require all denied\n</Directory>' >> /etc/apache2/apache2.conf
 
-# Fix pdf conversion premission
+# Fix pdf conversion permission
 RUN sed -i '/<\/policymap>/i <policy domain="coder" rights="read | write" pattern="PDF" />' /etc/ImageMagick-6/policy.xml

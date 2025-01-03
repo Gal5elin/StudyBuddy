@@ -136,7 +136,7 @@ const AddNoteModal: React.FC<AddNoteModalProps> = ({
               name="files"
               onChange={handleFileChange}
               multiple
-              accept="image/*,application/pdf,application/msword"
+              accept="image/*,application/pdf"
             />
           </Form.Group>
 
